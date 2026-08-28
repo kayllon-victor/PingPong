@@ -1,0 +1,8 @@
+# Pastas de compilacao e temporarias do Code::Blocks
+bin/
+obj/
+doxygen/
+
+# Arquivos de configuracao de layout e dependencias do Code::Blocks
+*.depend
+*.layout
