@@ -1,5 +1,5 @@
 #include "raylib.h"
-
+//ALTERACAO TESTE
 float altura = 500;
 float largura = 500;
 Color azul = {0,0,135,250};
