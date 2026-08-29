@@ -1,7 +1,10 @@
 #include "raylib.h"
-//ALTERACAO TESTE
+
 float altura = 500;
 float largura = 500;
+Sound somPonto;
+Sound somBatida;
+Sound somBatida2;
 Color azul = {0,0,135,250};
 Color verde = {0,70,0,250};
 Color vermelho ={135,0,0,250};
@@ -57,6 +60,7 @@ void Mov2(Reto &reto){
 void pingPong(Reto &reto, Reto &reto2, Reto &reto3, Reto &reto4, Bola &bola){
      if(CheckCollisionCircleRec(Vector2{bola.x, bola.y}, bola.raio, Rectangle{reto.x, reto.y, reto.xx, reto.yy})){
             if(bola.velocidade_x < 0){
+               PlaySound(somBatida);
                bola.velocidade_y = 0.075 * (bola.y -(reto.y + (reto.yy /2)));
              bola.velocidade_x *= -1.08;
             }
@@ -70,10 +74,10 @@ void pingPong(Reto &reto, Reto &reto2, Reto &reto3, Reto &reto4, Bola &bola){
             }
         if(CheckCollisionCircleRec(Vector2{bola.x, bola.y}, bola.raio, Rectangle{reto2.x, reto2.y, reto2.xx, reto2.yy})){
             if(bola.velocidade_x > 0){
+               PlaySound(somBatida);
+
                bola.velocidade_y = 0.075 * (bola.y -(reto2.y + (reto2.yy /2)));
                bola.velocidade_x *= -1.08;
-
-
 }
         }
        if(bola.velocidade_x > 25){
@@ -84,7 +88,7 @@ void pingPong(Reto &reto, Reto &reto2, Reto &reto3, Reto &reto4, Bola &bola){
             }
         if(CheckCollisionCircleRec(Vector2{bola.x, bola.y}, bola.raio, Rectangle{reto3.x, reto3.y, reto3.xx, reto3.yy})){
             ponto_2 += 1;
-
+            PlaySound(somPonto);
             bola.x = largura /2;
             bola.y = altura /2;
             bola.velocidade_x = 3;
@@ -92,6 +96,7 @@ void pingPong(Reto &reto, Reto &reto2, Reto &reto3, Reto &reto4, Bola &bola){
         }
         if(CheckCollisionCircleRec(Vector2{bola.x, bola.y}, bola.raio, Rectangle{reto4.x, reto4.y, reto4.xx, reto4.yy})){
             ponto_1 += 1;
+            PlaySound(somPonto);
             bola.velocidade_x = 3;
             bola.velocidade_y = 3;
             bola.x = largura /2;
@@ -101,16 +106,17 @@ void pingPong(Reto &reto, Reto &reto2, Reto &reto3, Reto &reto4, Bola &bola){
         bola.x += bola.velocidade_x;
         bola.y += bola.velocidade_y;
 
-        if(bola.x >= largura - bola.raio){
-            bola.velocidade_x *= -1;
-        }
-        if(bola.x <= 0 + bola.raio){
-            bola.velocidade_x *= -1;
-        }
+
+
         if(bola.y >= altura - bola.raio){
+            PlaySound(somBatida2);
+
             bola.velocidade_y *= -1;
+
         }
         if(bola.y <= + bola.raio){
+            PlaySound(somBatida2);
+
             bola.velocidade_y *= -1;
         }
         if(reto.y <= 0 ){
@@ -153,16 +159,28 @@ void Drawl(Bola bola){
 int main() {
     /////////////main.
     ///////////tela.
-    SetConfigFlags(FLAG_WINDOW_HIDDEN | FLAG_WINDOW_RESIZABLE);
+
 
     InitWindow(largura, altura, "qualquer");
+
     int monitor = GetCurrentMonitor();
     largura = GetMonitorWidth(monitor);
     altura = GetMonitorHeight(monitor);
     SetWindowSize(largura, altura);
     SetWindowPosition(0, 0);
     ClearWindowState(FLAG_WINDOW_HIDDEN);   //////////tela.
+    SetConfigFlags(FLAG_WINDOW_HIDDEN | FLAG_WINDOW_RESIZABLE);
+     //sons
+    InitAudioDevice();
+    somPonto = LoadSound("ponto.wav.wav");
+    somBatida = LoadSound("raquete.wav.wav");
+    somBatida2 = LoadSound("soun.wav.wav");
+
+
+
+
     SetTargetFPS(150);
+
     botao.cor = azul;
     botao.xx = 400;
     botao.x = largura /2 - 200;
@@ -275,7 +293,8 @@ int main() {
 
         EndDrawing();
     }
-
+    UnloadSound(somBatida);
+    CloseAudioDevice();
     CloseWindow();
     return 0;
 }
