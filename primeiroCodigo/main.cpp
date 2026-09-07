@@ -1,5 +1,6 @@
 #include "raylib.h"
-
+#include "random"
+using namespace std;
 float altura = 500;
 float largura = 500;
 Sound somPonto;
@@ -8,13 +9,23 @@ Sound somBatida2;
 Color azul = {0,0,135,250};
 Color verde = {0,70,0,250};
 Color vermelho ={135,0,0,250};
+Color nada = {0,0,0,0,};
+
+int frame = 0;
+int evento_tempo = 150 * 25;
+int aleatorio2 = 0;
+int aleatorio3 = 0;
+int numero_de_eventos = 0;
+int nu_meteoro = 1;
 int estado = 0;
 int menu = 0;
 int ia = 1;
 int j2 = 2;
 
+
 int ponto_1 = 0;
 int ponto_2 = 0;
+
 
 //classes
 class Reto{
@@ -30,6 +41,7 @@ public:
     float velocidade_x, velocidade_y, raio;
     Color cor = WHITE;
 };
+
 
 //funçoes de tratamento de evento
 void Mouse(Reto botao, int estadoReal){
@@ -138,7 +150,9 @@ void Ia(Bola &bola, Reto &reto2){
               if(bola.y < reto2.y){
               reto2.y -= reto2.velocidade_y;}
 }
+
 //funçoes de desenhar
+Reto boom;
 Reto botao2;
 Reto botao;
 Reto reto4;
@@ -155,12 +169,18 @@ Bola bola;
 void Drawl(Bola bola){
     DrawCircle(bola.x, bola.y, bola.raio, bola.cor);
 };
+void meteoros(Texture2D meteoro, Reto &boom, int aleatorio2, int aleatorio3) {
+    boom.x = aleatorio2;
+    boom.y = aleatorio3;
+    DrawlReto(boom);
+    DrawTexturePro(meteoro, (Rectangle){0, 0, boom.xx, boom.yy}, (Rectangle){boom.x, boom.y, boom.xx, boom.yy}, {0,0}, 0, WHITE);
+}
 //////////////////main.
 int main() {
     /////////////main.
     ///////////tela.
 
-
+    SetConfigFlags(FLAG_WINDOW_HIDDEN | FLAG_WINDOW_RESIZABLE);
     InitWindow(largura, altura, "qualquer");
 
     int monitor = GetCurrentMonitor();
@@ -169,7 +189,11 @@ int main() {
     SetWindowSize(largura, altura);
     SetWindowPosition(0, 0);
     ClearWindowState(FLAG_WINDOW_HIDDEN);   //////////tela.
-    SetConfigFlags(FLAG_WINDOW_HIDDEN | FLAG_WINDOW_RESIZABLE);
+
+
+    //texturas
+    Texture2D meteoro = LoadTexture("meteoro.png.png");
+
      //sons
     InitAudioDevice();
     somPonto = LoadSound("ponto.wav.wav");
@@ -228,12 +252,37 @@ int main() {
     bola.raio = 20;
     bola.cor = WHITE;
 
+    boom.cor = BLACK;
+    boom.velocidade_x = 7;
+    boom.velocidade_y = 7;
+    boom.x = 0;
+    boom.xx = (float)meteoro.width /5;
+    boom.y = 0;
+    boom.yy = (float)meteoro.height /3;
+
     //loop
     while(!WindowShouldClose()){
         largura = GetScreenWidth();
         altura = GetScreenHeight();
 
+        //variavel aleatoria
+        random_device rd;
+        mt19937 gen(rd());
+        uniform_int_distribution<int> evento(0, 1);
+        uniform_int_distribution<int> ale_largura(40, largura - 40);
+        uniform_int_distribution<int> ale_altura(0, altura);
+        int aleatorio = evento(gen);
+
+
         //tratamento de eventos
+        frame++;
+
+        if(frame == evento_tempo ){
+            numero_de_eventos = aleatorio;
+            aleatorio2 =  ale_largura(gen);
+            aleatorio3 = ale_altura(gen);
+            frame = 0;
+        }
         if(estado == menu){
             Mouse(botao, ia);
             Mouse(botao2, j2);
@@ -258,7 +307,6 @@ int main() {
             pingPong(reto, reto2, reto3, reto4, bola);
         }
         //desenhar
-
         BeginDrawing();
         if(estado == menu){
             ClearBackground(BLACK);
@@ -274,6 +322,9 @@ int main() {
         DrawCircleLines(largura /2, altura/2, 300, WHITE);
         DrawlReto(reto3);
         DrawlReto(reto4);
+        if(numero_de_eventos == nu_meteoro){
+                meteoros(meteoro, boom, aleatorio2, aleatorio3);
+            }
         DrawText(TextFormat("%d",ponto_1),largura /3, 0, 80, WHITE);
         DrawText(TextFormat("%d",ponto_2),largura /1.5, 0, 80, WHITE);
         Drawl(bola);}
@@ -293,6 +344,7 @@ int main() {
 
         EndDrawing();
     }
+    UnloadTexture(meteoro);
     UnloadSound(somBatida);
     CloseAudioDevice();
     CloseWindow();
