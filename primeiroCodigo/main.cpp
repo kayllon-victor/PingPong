@@ -3,6 +3,10 @@
 using namespace std;
 float altura = 500;
 float largura = 500;
+//variavel aleatoria
+random_device rd;
+mt19937 gen(rd());
+uniform_int_distribution<int> evento(0, 1);
 Sound somPonto;
 Sound somBatida;
 Sound somBatida2;
@@ -12,10 +16,12 @@ Color vermelho ={135,0,0,250};
 Color nada = {0,0,0,0,};
 
 int frame = 0;
-int evento_tempo = 150 * 25;
+int evento_tempo = 150 * 7;
 int aleatorio2 = 0;
 int aleatorio3 = 0;
+int aleatorio = 0;
 int numero_de_eventos = 0;
+bool evento_acontecendo = false;
 int nu_meteoro = 1;
 int estado = 0;
 int menu = 0;
@@ -23,11 +29,24 @@ int ia = 1;
 int j2 = 2;
 
 
+int atualx = 0;
+int atualy = 0;
+int frame_fps = 0;
+
 int ponto_1 = 0;
 int ponto_2 = 0;
 
 
 //classes
+class Meteoro{
+    public:
+    float x, y;
+    int atualx = 0;
+    int atualy = 0;
+    int frame_fps;
+    bool ativo = false;
+
+};
 class Reto{
 public:
     float x, y, xx, yy;
@@ -151,7 +170,8 @@ void Ia(Bola &bola, Reto &reto2){
               reto2.y -= reto2.velocidade_y;}
 }
 
-//funçoes de desenhar
+//funcoes de desenhar
+Meteoro chuva[5];
 Reto boom;
 Reto botao2;
 Reto botao;
@@ -169,11 +189,58 @@ Bola bola;
 void Drawl(Bola bola){
     DrawCircle(bola.x, bola.y, bola.raio, bola.cor);
 };
-void meteoros(Texture2D meteoro, Reto &boom, int aleatorio2, int aleatorio3) {
-    boom.x = aleatorio2;
-    boom.y = aleatorio3;
+
+void meteoros(Texture2D meteoro,Meteoro chuva[5], Reto &boom) {
+    if(evento_acontecendo == true){
+    for(int i = 0; i < 5; i++){
+        if(chuva[i].ativo == false){
+            chuva[i].atualx = 0;
+            chuva[i].atualy = 0;
+            chuva[i].frame_fps = 0;
+            uniform_int_distribution<int> ale_largura(300, largura - 300);
+            uniform_int_distribution<int> ale_altura(300, altura - 300);
+            chuva[i].x = ale_largura(gen);
+            chuva[i].y = ale_altura(gen);
+            chuva[i].ativo = true;
+        }
+    }
+    evento_acontecendo = false;
+    }
+
+    for(int i = 0; i <5; i++){
+      if(chuva[i].ativo == true){
+
+       chuva[i].frame_fps++;
+    if(chuva[i].frame_fps == 10){
+       chuva[i].frame_fps = 0;
+       chuva[i].atualx++;
+
+
+    if(chuva[i].atualx > 4 ){
+        chuva[i].atualx = 0;
+        chuva[i].atualy++;
+
+    }
+
+     if(chuva[i].atualy > 2){
+        chuva[i].atualx = 0;
+        chuva[i].atualy = 0;
+        chuva[i].ativo = false;
+
+    }
+
+
+    }
+    if(chuva[i].ativo == true) {
+    float imagem_origemx = chuva[i].atualx * boom.xx * 2.5;
+    float imagem_origemy = chuva[i].atualy * boom.yy * 2.5;
+    boom.x = chuva[i].x;
+    boom.y = 0;
     DrawlReto(boom);
-    DrawTexturePro(meteoro, (Rectangle){0, 0, boom.xx, boom.yy}, (Rectangle){boom.x, boom.y, boom.xx, boom.yy}, {0,0}, 0, WHITE);
+    DrawTexturePro(meteoro, (Rectangle){imagem_origemx, imagem_origemy, boom.xx * 2.5 , boom.yy * 2.5}, (Rectangle){chuva[i].x, 0, boom.xx , boom.yy }, {0,0}, 0, WHITE);
+}
+}
+}
 }
 //////////////////main.
 int main() {
@@ -256,31 +323,32 @@ int main() {
     boom.velocidade_x = 7;
     boom.velocidade_y = 7;
     boom.x = 0;
-    boom.xx = (float)meteoro.width /5;
+    boom.xx = (float)meteoro.width /5 * 0.4;
     boom.y = 0;
-    boom.yy = (float)meteoro.height /3;
+    boom.yy = (float)meteoro.height /3 * 0.4;
 
     //loop
     while(!WindowShouldClose()){
         largura = GetScreenWidth();
         altura = GetScreenHeight();
 
-        //variavel aleatoria
-        random_device rd;
-        mt19937 gen(rd());
-        uniform_int_distribution<int> evento(0, 1);
-        uniform_int_distribution<int> ale_largura(40, largura - 40);
-        uniform_int_distribution<int> ale_altura(0, altura);
-        int aleatorio = evento(gen);
+
 
 
         //tratamento de eventos
         frame++;
 
         if(frame == evento_tempo ){
+            aleatorio = evento(gen);
             numero_de_eventos = aleatorio;
-            aleatorio2 =  ale_largura(gen);
-            aleatorio3 = ale_altura(gen);
+            if(numero_de_eventos != 0){
+            evento_acontecendo = true;
+            frame_fps = 0;
+            }
+            else{
+            evento_acontecendo = false;
+
+            }
             frame = 0;
         }
         if(estado == menu){
@@ -323,8 +391,9 @@ int main() {
         DrawlReto(reto3);
         DrawlReto(reto4);
         if(numero_de_eventos == nu_meteoro){
-                meteoros(meteoro, boom, aleatorio2, aleatorio3);
+                meteoros(meteoro,chuva, boom);
             }
+
         DrawText(TextFormat("%d",ponto_1),largura /3, 0, 80, WHITE);
         DrawText(TextFormat("%d",ponto_2),largura /1.5, 0, 80, WHITE);
         Drawl(bola);}
