@@ -1,22 +1,43 @@
 #include "raylib.h"
-
+#include "random"
+using namespace std;
 float altura = 500;
 float largura = 500;
+//variavel aleatoria
+random_device rd;
+mt19937 gen(rd());
+uniform_int_distribution<int> evento(0, 1);
 Sound somPonto;
 Sound somBatida;
 Sound somBatida2;
 Color azul = {0,0,135,250};
 Color verde = {0,70,0,250};
 Color vermelho ={135,0,0,250};
+Color nada = {0,0,0,0,};
+
+int frame = 0;
+int evento_tempo = 150 * 7;
+int aleatorio2 = 0;
+int aleatorio3 = 0;
+int aleatorio = 0;
+int numero_de_eventos = 0;
+bool evento_acontecendo = false;
+int nu_meteoro = 1;
 int estado = 0;
 int menu = 0;
 int ia = 1;
 int j2 = 2;
 
+
+int atualx = 0;
+int atualy = 0;
+int frame_fps = 0;
+
 int ponto_1 = 0;
 int ponto_2 = 0;
 
-// classes
+
+//classes
 class Reto{
 public:
     float x, y, xx, yy;
@@ -30,6 +51,7 @@ public:
     float velocidade_x, velocidade_y, raio;
     Color cor = WHITE;
 };
+
 
 // funcoes de tratamento de evento
 void Mouse(Reto botao, int estadoReal){
@@ -145,8 +167,7 @@ void Ia(Bola &bola, Reto &reto2){
         reto2.y -= reto2.velocidade_y;
     }
 }
-
-// funcoes de desenhar
+//fun�oes de desenhar
 Reto botao2;
 Reto botao;
 Reto reto4;
@@ -163,11 +184,12 @@ Bola bola;
 void Drawl(Bola bola){
     DrawCircle(bola.x, bola.y, bola.raio, bola.cor);
 };
-
-// main
+//////////////////main.
 int main() {
-    // tela
-    SetConfigFlags(FLAG_WINDOW_HIDDEN | FLAG_WINDOW_RESIZABLE);
+    /////////////main.
+    ///////////tela.
+
+
     InitWindow(largura, altura, "qualquer");
 
     int monitor = GetCurrentMonitor();
@@ -175,9 +197,9 @@ int main() {
     altura = GetMonitorHeight(monitor);
     SetWindowSize(largura, altura);
     SetWindowPosition(0, 0);
-    ClearWindowState(FLAG_WINDOW_HIDDEN);
-
-    // sons
+    ClearWindowState(FLAG_WINDOW_HIDDEN);   //////////tela.
+    SetConfigFlags(FLAG_WINDOW_HIDDEN | FLAG_WINDOW_RESIZABLE);
+     //sons
     InitAudioDevice();
     somPonto = LoadSound("ponto.wav.wav");
     somBatida = LoadSound("raquete.wav.wav");
@@ -232,12 +254,23 @@ int main() {
     bola.raio = 20;
     bola.cor = WHITE;
 
+    boom.cor = BLACK;
+    boom.velocidade_x = 7;
+    boom.velocidade_y = 7;
+    boom.x = 0;
+    boom.xx = (float)meteoro.width /5 * 0.4;
+    boom.y = 0;
+    boom.yy = (float)meteoro.height /3 * 0.4;
+
     // loop
     while(!WindowShouldClose()){
         largura = GetScreenWidth();
         altura = GetScreenHeight();
 
-        // tratamento de eventos
+
+
+
+        //tratamento de eventos
         if(estado == menu){
             Mouse(botao, ia);
             Mouse(botao2, j2);
@@ -260,8 +293,8 @@ int main() {
         if(estado == j2){
             pingPong(reto, reto2, reto3, reto4, bola);
         }
+        //desenhar
 
-        // desenhar
         BeginDrawing();
         if(estado == menu){
             ClearBackground(BLACK);
@@ -273,16 +306,17 @@ int main() {
         }
         else if(estado == ia){
             ClearBackground(verde);
-            DrawlReto(reto);
-            DrawlReto(reto2);
-            DrawLine(largura / 2, 0, largura/2, altura, WHITE);
-            DrawCircleLines(largura /2, altura/2, 300, WHITE);
-            DrawlReto(reto3);
-            DrawlReto(reto4);
-            DrawText(TextFormat("%d",ponto_1),largura /3, 0, 80, WHITE);
-            DrawText(TextFormat("%d",ponto_2),largura /1.5, 0, 80, WHITE);
-            Drawl(bola);
-        }
+        DrawlReto(reto);
+        DrawlReto(reto2);
+        DrawLine(largura / 2, 0, largura/2, altura, WHITE);
+        DrawCircleLines(largura /2, altura/2, 300, WHITE);
+        DrawlReto(reto3);
+        DrawlReto(reto4);
+        DrawText(TextFormat("%d",ponto_1),largura /3, 0, 80, WHITE);
+        DrawText(TextFormat("%d",ponto_2),largura /1.5, 0, 80, WHITE);
+        Drawl(bola);}
+
+
         else if(estado == j2){
             ClearBackground(verde);
             DrawlReto(reto);
@@ -298,7 +332,6 @@ int main() {
 
         EndDrawing();
     }
-
     UnloadSound(somBatida);
     CloseAudioDevice();
     CloseWindow();
