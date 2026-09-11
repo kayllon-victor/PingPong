@@ -33,6 +33,7 @@ int atualx = 0;
 int atualy = 0;
 int frame_fps = 0;
 
+
 int ponto_1 = 0;
 int ponto_2 = 0;
 
@@ -45,6 +46,7 @@ class Meteoro{
     int atualy = 0;
     int frame_fps;
     bool ativo = false;
+    int limite;
 
 };
 class Reto{
@@ -62,7 +64,7 @@ public:
 };
 
 
-//funçoes de tratamento de evento
+//funï¿½oes de tratamento de evento
 void Mouse(Reto botao, int estadoReal){
     Vector2 mouse = GetMousePosition();
     if(CheckCollisionPointRec(mouse, Rectangle{botao.x, botao.y, botao.xx, botao.yy}) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
@@ -87,7 +89,7 @@ void Mov2(Reto &reto){
     }
 }
 
-//funçoes de atualizacao de posicoes
+//funï¿½oes de atualizacao de posicoes
 void pingPong(Reto &reto, Reto &reto2, Reto &reto3, Reto &reto4, Bola &bola){
      if(CheckCollisionCircleRec(Vector2{bola.x, bola.y}, bola.raio, Rectangle{reto.x, reto.y, reto.xx, reto.yy})){
             if(bola.velocidade_x < 0){
@@ -200,11 +202,12 @@ void meteoros(Texture2D meteoro,Meteoro chuva[5], Reto &boom) {
             uniform_int_distribution<int> ale_largura(300, largura - 300);
             uniform_int_distribution<int> ale_altura(300, altura - 300);
             chuva[i].x = ale_largura(gen);
-            chuva[i].y = ale_altura(gen);
+            chuva[i].limite = ale_altura(gen);
+            chuva[i].y = 0;
             chuva[i].ativo = true;
         }
     }
-    evento_acontecendo = false;
+    //evento_acontecendo = false;
     }
 
     for(int i = 0; i <5; i++){
@@ -215,29 +218,43 @@ void meteoros(Texture2D meteoro,Meteoro chuva[5], Reto &boom) {
        chuva[i].frame_fps = 0;
        chuva[i].atualx++;
 
-
+    
+    
+    }
     if(chuva[i].atualx > 4 ){
+        
         chuva[i].atualx = 0;
         chuva[i].atualy++;
-
     }
 
-     if(chuva[i].atualy > 2){
+    if(chuva[i].y != chuva[i].limite ){
+        chuva[i].y += 10;
+        if(chuva[i].atualy == 1 && chuva[i].atualx == 2){
+            chuva[i].atualx = 0;
+            chuva[i].atualx++;
+        }
+    if(chuva[i].y > chuva[i].limite ){
+        chuva[i].y = 0;
+        if(chuva[i].atualy > 2){
         chuva[i].atualx = 0;
         chuva[i].atualy = 0;
         chuva[i].ativo = false;
-
     }
+     
+     }
+    
+
 
 
     }
     if(chuva[i].ativo == true) {
+        
     float imagem_origemx = chuva[i].atualx * boom.xx * 2.5;
     float imagem_origemy = chuva[i].atualy * boom.yy * 2.5;
     boom.x = chuva[i].x;
-    boom.y = 0;
+    boom.y = chuva[i].limite;
     DrawlReto(boom);
-    DrawTexturePro(meteoro, (Rectangle){imagem_origemx, imagem_origemy, boom.xx * 2.5 , boom.yy * 2.5}, (Rectangle){chuva[i].x, 0, boom.xx , boom.yy }, {0,0}, 0, WHITE);
+    DrawTexturePro(meteoro, (Rectangle){imagem_origemx, imagem_origemy, boom.xx * 2.5 , boom.yy * 2.5}, (Rectangle){chuva[i].x, chuva[i].y, boom.xx , boom.yy }, {0,0}, 0, WHITE);
 }
 }
 }
@@ -279,8 +296,8 @@ int main() {
     botao.y = altura /2 - 35 - 100;
 
     botao2.cor = vermelho;
-    botao2.xx = 200;
-    botao2.x = largura /2 - 100;
+    botao2.xx = 400;
+    botao2.x = largura /2 - 200;
     botao2.yy = 70;
     botao2.y = altura /2 + 35 + 60;
 
@@ -336,7 +353,10 @@ int main() {
 
 
         //tratamento de eventos
-        frame++;
+        if(estado != menu){
+            frame++;
+        }
+        
 
         if(frame == evento_tempo ){
             aleatorio = evento(gen);
@@ -380,7 +400,9 @@ int main() {
             ClearBackground(BLACK);
             DrawlReto(botao);
             DrawlReto(botao2);
-             DrawText(TextFormat("1j"),largura /3, 0, 80, WHITE);
+            DrawText(TextFormat("pong de mesa"),largura /3, 0, 100, WHITE);
+            DrawText(TextFormat("modo ia"),largura /2 - 85, botao.y + 10, 45, WHITE);
+            DrawText(TextFormat("modo 2 jogadores"),botao2.x + 25, botao2.y + 15, 40, WHITE);
         }
         else if(estado == ia){
             ClearBackground(verde);
