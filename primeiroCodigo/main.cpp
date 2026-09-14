@@ -1,5 +1,6 @@
-#include "raylib.h"
-#include "random"
+#include <raylib.h>
+#include <random>
+#include <cmath>
 using namespace std;
 float altura = 500;
 float largura = 500;
@@ -7,6 +8,7 @@ float largura = 500;
 random_device rd;
 mt19937 gen(rd());
 uniform_int_distribution<int> evento(0, 1);
+
 Sound somPonto;
 Sound somBatida;
 Sound somBatida2;
@@ -51,6 +53,7 @@ class Meteoro{
 };
 class Reto{
 public:
+    bool ativado;
     float x, y, xx, yy;
     int velocidade_x, velocidade_y;
     Color cor = WHITE;
@@ -90,7 +93,7 @@ void Mov2(Reto &reto){
 }
 
 //fun�oes de atualizacao de posicoes
-void pingPong(Reto &reto, Reto &reto2, Reto &reto3, Reto &reto4, Bola &bola){
+void pingPong(Reto &reto, Reto &reto2, Reto &reto3, Reto &reto4, Bola &bola, Reto boom[5], Meteoro chuva[5]){
      if(CheckCollisionCircleRec(Vector2{bola.x, bola.y}, bola.raio, Rectangle{reto.x, reto.y, reto.xx, reto.yy})){
             if(bola.velocidade_x < 0){
                PlaySound(somBatida);
@@ -135,7 +138,24 @@ void pingPong(Reto &reto, Reto &reto2, Reto &reto3, Reto &reto4, Bola &bola){
             bola.x = largura /2;
             bola.y = altura /2;
         }
+        for(int i = 0; i < 5; i ++){
+        if(((chuva[i].atualx >= 3 && chuva[i].atualy == 1) || (chuva[i].atualx == 0 && chuva[i].atualy == 2)) && chuva[i].ativo == true &&  chuva[i].y >= chuva[i].limite && CheckCollisionCircleRec(Vector2{bola.x, bola.y}, bola.raio, Rectangle{boom[i].x, boom[i].y, boom[i].xx, boom[i].yy})){
 
+        if(boom[i].ativado == false){
+        float dx = bola.x - boom[i].x;
+        float dy = bola.y - boom[i].y;
+        float dh = sqrt((dx * dx) + (dy*dy));
+        float potencia = 400 / (dh + 1);
+        if(dh != 0){
+            dx = dx / dh;
+            dy = dy / dh;
+            bola.velocidade_x += dx * potencia;
+            bola.velocidade_y += dy * potencia;
+            boom[i].ativado = true;
+        }
+        }
+    }
+        }
         bola.x += bola.velocidade_x;
         bola.y += bola.velocidade_y;
 
@@ -174,7 +194,7 @@ void Ia(Bola &bola, Reto &reto2){
 
 //funcoes de desenhar
 Meteoro chuva[5];
-Reto boom;
+Reto boom[5];
 Reto botao2;
 Reto botao;
 Reto reto4;
@@ -192,73 +212,79 @@ void Drawl(Bola bola){
     DrawCircle(bola.x, bola.y, bola.raio, bola.cor);
 };
 
-void meteoros(Texture2D meteoro,Meteoro chuva[5], Reto &boom) {
-    if(evento_acontecendo == true){
+void meteoros(Texture2D meteoro,Meteoro chuva[5], Reto boom[5]) {
+   // if(evento_acontecendo == true){
     for(int i = 0; i < 5; i++){
         if(chuva[i].ativo == false){
             chuva[i].atualx = 0;
             chuva[i].atualy = 0;
             chuva[i].frame_fps = 0;
-            uniform_int_distribution<int> ale_largura(300, largura - 300);
-            uniform_int_distribution<int> ale_altura(300, altura - 300);
+            uniform_int_distribution<int> ale_largura(150, largura - 150);
+            uniform_int_distribution<int> ale_altura(0, altura - 150);
             chuva[i].x = ale_largura(gen);
             chuva[i].limite = ale_altura(gen);
             chuva[i].y = 0;
             chuva[i].ativo = true;
+            boom[i].ativado = false;
         }
     }
     //evento_acontecendo = false;
-    }
+
 
     for(int i = 0; i <5; i++){
       if(chuva[i].ativo == true){
 
        chuva[i].frame_fps++;
-    if(chuva[i].frame_fps == 10){
+    if(chuva[i].frame_fps == 20){
        chuva[i].frame_fps = 0;
        chuva[i].atualx++;
 
-    
-    
+
+
     }
     if(chuva[i].atualx > 4 ){
-        
+
         chuva[i].atualx = 0;
         chuva[i].atualy++;
     }
 
     if(chuva[i].y != chuva[i].limite ){
         chuva[i].y += 10;
-        if(chuva[i].atualy == 1 && chuva[i].atualx == 2){
-            chuva[i].atualx = 0;
-            chuva[i].atualx++;
+        if(chuva[i].atualy == 1 && chuva[i].atualx == 3){
+            chuva[i].atualx = 3;
+        }
         }
     if(chuva[i].y > chuva[i].limite ){
-        chuva[i].y = 0;
+        chuva[i].y = chuva[i].limite;
+
+      if(chuva[i].atualy < 1 || (chuva[i].atualy == 1 && chuva[i].atualx < 3)){
+          chuva[i].atualx = 3;
+          chuva[i].atualy = 1;
+          if((chuva[i].atualx >= 3 && chuva[i].atualy == 1) || (chuva[i].atualx == 0 && chuva[i].atualy == 2))
+            DrawlReto(boom[i]);
+          }
+    }
+
+    else{
         if(chuva[i].atualy > 2){
         chuva[i].atualx = 0;
         chuva[i].atualy = 0;
         chuva[i].ativo = false;
-    }
-     
-     }
-    
-
-
 
     }
-    if(chuva[i].ativo == true) {
-        
-    float imagem_origemx = chuva[i].atualx * boom.xx * 2.5;
-    float imagem_origemy = chuva[i].atualy * boom.yy * 2.5;
-    boom.x = chuva[i].x;
-    boom.y = chuva[i].limite;
-    DrawlReto(boom);
-    DrawTexturePro(meteoro, (Rectangle){imagem_origemx, imagem_origemy, boom.xx * 2.5 , boom.yy * 2.5}, (Rectangle){chuva[i].x, chuva[i].y, boom.xx , boom.yy }, {0,0}, 0, WHITE);
+    }
+
+    float imagem_origemx = chuva[i].atualx * boom[i].xx * 2.5;
+    float imagem_origemy = chuva[i].atualy * boom[i].yy * 2.5;
+    boom[i].x = chuva[i].x;
+    boom[i].y = chuva[i].limite;
+
+    DrawTexturePro(meteoro, (Rectangle){imagem_origemx, imagem_origemy, boom[i].xx * 2.5 , boom[i].yy * 2.5}, (Rectangle){chuva[i].x, chuva[i].y, boom[i].xx , boom[i].yy }, {0,0}, 0, WHITE);
+
 }
 }
 }
-}
+
 //////////////////main.
 int main() {
     /////////////main.
@@ -335,15 +361,16 @@ int main() {
     bola.y = altura /2;
     bola.raio = 20;
     bola.cor = WHITE;
-
-    boom.cor = BLACK;
-    boom.velocidade_x = 7;
-    boom.velocidade_y = 7;
-    boom.x = 0;
-    boom.xx = (float)meteoro.width /5 * 0.4;
-    boom.y = 0;
-    boom.yy = (float)meteoro.height /3 * 0.4;
-
+    for(int i = 0; i < 5; i++){
+    boom[i].cor = BLACK;
+    boom[i].velocidade_x = 7;
+    boom[i].velocidade_y = 7;
+    boom[i].x = 0;
+    boom[i].xx = (float)meteoro.width /5 * 0.4;
+    boom[i].y = 0;
+    boom[i].yy = (float)meteoro.height /3 * 0.4;
+    boom[i].ativado = false;
+    }
     //loop
     while(!WindowShouldClose()){
         largura = GetScreenWidth();
@@ -356,7 +383,7 @@ int main() {
         if(estado != menu){
             frame++;
         }
-        
+
 
         if(frame == evento_tempo ){
             aleatorio = evento(gen);
@@ -367,6 +394,9 @@ int main() {
             }
             else{
             evento_acontecendo = false;
+            for(int i = 0; i <5; i ++){
+                chuva[i].ativo = false;
+            }
 
             }
             frame = 0;
@@ -386,13 +416,13 @@ int main() {
         }
         //atualizacao de posicoes
         if(estado == ia){
-            pingPong(reto, reto2, reto3, reto4, bola);
+            pingPong(reto, reto2, reto3, reto4, bola, boom, chuva);
             if(bola.x > largura / 2){
             Ia(bola, reto2);
         }
         }
         if(estado == j2){
-            pingPong(reto, reto2, reto3, reto4, bola);
+            pingPong(reto, reto2, reto3, reto4, bola, boom, chuva);
         }
         //desenhar
         BeginDrawing();
@@ -400,8 +430,8 @@ int main() {
             ClearBackground(BLACK);
             DrawlReto(botao);
             DrawlReto(botao2);
-            DrawText(TextFormat("pong de mesa"),largura /3, 0, 100, WHITE);
-            DrawText(TextFormat("modo ia"),largura /2 - 85, botao.y + 10, 45, WHITE);
+            DrawText(TextFormat("pong de mesa"),((int)largura) /4, 0, 100, WHITE);
+            DrawText(TextFormat("modo ia"),((int)largura) /2 - 85, botao.y + 10, 45, WHITE);
             DrawText(TextFormat("modo 2 jogadores"),botao2.x + 25, botao2.y + 15, 40, WHITE);
         }
         else if(estado == ia){
