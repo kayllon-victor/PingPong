@@ -139,23 +139,36 @@ void pingPong(Reto &reto, Reto &reto2, Reto &reto3, Reto &reto4, Bola &bola, Ret
             bola.y = altura /2;
         }
         for(int i = 0; i < 5; i ++){
-        if(((chuva[i].atualx >= 3 && chuva[i].atualy == 1) || (chuva[i].atualx == 0 && chuva[i].atualy == 2)) && chuva[i].ativo == true &&  chuva[i].y >= chuva[i].limite && CheckCollisionCircleRec(Vector2{bola.x, bola.y}, bola.raio, Rectangle{boom[i].x, boom[i].y, boom[i].xx, boom[i].yy})){
+        if(((chuva[i].atualx >= 3 && chuva[i].atualy == 1)) && chuva[i].ativo == true &&  chuva[i].y >= chuva[i].limite && CheckCollisionCircleRec(Vector2{bola.x, bola.y}, bola.raio, Rectangle{boom[i].x, boom[i].y, boom[i].xx, boom[i].yy})){
 
         if(boom[i].ativado == false){
-        float dx = bola.x - boom[i].x;
-        float dy = bola.y - boom[i].y;
+        float dx = bola.x - (boom[i].x /2);
+        float dy = bola.y - (boom[i].y /2);
         float dh = sqrt((dx * dx) + (dy*dy));
-        float potencia = 400 / (dh + 1);
+        float potencia = 650 / (dh + 1);
         if(dh != 0){
             dx = dx / dh;
             dy = dy / dh;
-            bola.velocidade_x += dx * potencia;
-            bola.velocidade_y += dy * potencia;
+            bola.velocidade_x = dx * potencia * 10;
+            bola.velocidade_y = dy * potencia * 5;
             boom[i].ativado = true;
+           if(bola.velocidade_x > 22){
+                  bola.velocidade_x = 22;
+              }
+           if(bola.velocidade_x < -22){
+                   bola.velocidade_x = -22;
+              }
+           if(bola.velocidade_y > 22){
+                bola.velocidade_y = 22;
+            }
+            if(bola.velocidade_y < -22){
+                bola.velocidade_y = -22;
+            }
+}
         }
         }
     }
-        }
+
         bola.x += bola.velocidade_x;
         bola.y += bola.velocidade_y;
 
@@ -163,14 +176,15 @@ void pingPong(Reto &reto, Reto &reto2, Reto &reto3, Reto &reto4, Bola &bola, Ret
 
         if(bola.y >= altura - bola.raio){
             PlaySound(somBatida2);
-
+           if(bola.velocidade_y > 0){
             bola.velocidade_y *= -1;
-
+           }
         }
-        if(bola.y <= + bola.raio){
+        if(bola.y <= bola.raio){
             PlaySound(somBatida2);
-
+          if(bola.velocidade_y < 0){
             bola.velocidade_y *= -1;
+          }
         }
         if(reto.y <= 0 ){
             reto.y += reto.velocidade_y;
@@ -219,11 +233,11 @@ void meteoros(Texture2D meteoro,Meteoro chuva[5], Reto boom[5]) {
             chuva[i].atualx = 0;
             chuva[i].atualy = 0;
             chuva[i].frame_fps = 0;
-            uniform_int_distribution<int> ale_largura(150, largura - 150);
-            uniform_int_distribution<int> ale_altura(0, altura - 150);
+            uniform_int_distribution<int> ale_largura(300, largura - 300);
+            uniform_int_distribution<int> ale_altura(0, altura - 100);
             chuva[i].x = ale_largura(gen);
             chuva[i].limite = ale_altura(gen);
-            chuva[i].y = 0;
+            chuva[i].y = -50;
             chuva[i].ativo = true;
             boom[i].ativado = false;
         }
@@ -249,7 +263,7 @@ void meteoros(Texture2D meteoro,Meteoro chuva[5], Reto boom[5]) {
     }
 
     if(chuva[i].y != chuva[i].limite ){
-        chuva[i].y += 10;
+        chuva[i].y += 6;
         if(chuva[i].atualy == 1 && chuva[i].atualx == 3){
             chuva[i].atualx = 3;
         }
@@ -260,7 +274,7 @@ void meteoros(Texture2D meteoro,Meteoro chuva[5], Reto boom[5]) {
       if(chuva[i].atualy < 1 || (chuva[i].atualy == 1 && chuva[i].atualx < 3)){
           chuva[i].atualx = 3;
           chuva[i].atualy = 1;
-          if((chuva[i].atualx >= 3 && chuva[i].atualy == 1) || (chuva[i].atualx == 0 && chuva[i].atualy == 2))
+          if((chuva[i].atualx >= 3 && chuva[i].atualy == 1))
             DrawlReto(boom[i]);
           }
     }
@@ -362,7 +376,7 @@ int main() {
     bola.raio = 20;
     bola.cor = WHITE;
     for(int i = 0; i < 5; i++){
-    boom[i].cor = BLACK;
+    boom[i].cor = nada;
     boom[i].velocidade_x = 7;
     boom[i].velocidade_y = 7;
     boom[i].x = 0;
@@ -459,6 +473,9 @@ int main() {
         DrawCircleLines(largura /2, altura/2, 300, WHITE);
         DrawlReto(reto3);
         DrawlReto(reto4);
+          if(numero_de_eventos == nu_meteoro){
+                meteoros(meteoro,chuva, boom);
+              }
         DrawText(TextFormat("%d",ponto_1),largura /3, 0, 80, WHITE);
         DrawText(TextFormat("%d",ponto_2),largura /1.5, 0, 80, WHITE);
         Drawl(bola);}
