@@ -16,6 +16,7 @@ Color azul = {0,0,135,250};
 Color verde = {0,70,0,250};
 Color vermelho ={135,0,0,250};
 Color nada = {0,0,0,0,};
+Color preto ={0,0,0,150};
 
 int frame = 0;
 int evento_tempo = 150 * 7;
@@ -64,6 +65,7 @@ public:
     float x, y;
     float velocidade_x, velocidade_y, raio;
     Color cor = WHITE;
+    bool sombra = false;
 };
 
 
@@ -221,12 +223,13 @@ void DrawlReto(Reto reto){
 };
 
 Bola bola;
+Bola Sombra[5];
 
 void Drawl(Bola bola){
     DrawCircle(bola.x, bola.y, bola.raio, bola.cor);
 };
 
-void meteoros(Texture2D meteoro,Meteoro chuva[5], Reto boom[5]) {
+void meteoros(Texture2D meteoro,Meteoro chuva[5], Reto boom[5], Bola Sombra[5]) {
    // if(evento_acontecendo == true){
     for(int i = 0; i < 5; i++){
         if(chuva[i].ativo == false){
@@ -240,6 +243,13 @@ void meteoros(Texture2D meteoro,Meteoro chuva[5], Reto boom[5]) {
             chuva[i].y = -50;
             chuva[i].ativo = true;
             boom[i].ativado = false;
+            //sombra
+            Sombra[i].cor = preto;
+            Sombra[i].x = chuva[i].x;
+            Sombra[i].y = chuva[i].limite;
+            Sombra[i].raio = 10;
+            Sombra[i].sombra = true;
+            
         }
     }
     //evento_acontecendo = false;
@@ -264,6 +274,15 @@ void meteoros(Texture2D meteoro,Meteoro chuva[5], Reto boom[5]) {
 
     if(chuva[i].y != chuva[i].limite ){
         chuva[i].y += 6;
+        int raio-aumentado = 0;
+        raio-aumentado++;
+        if(raio-aumentado == 200){
+            aio-aumentado = 0;
+        Sombra[i].raio++;
+        if(Sombra[i].raio >= 30){
+            Sombra[i].raio = 30;
+        }
+    }
         if(chuva[i].atualy == 1 && chuva[i].atualx == 3){
             chuva[i].atualx = 3;
         }
@@ -292,9 +311,9 @@ void meteoros(Texture2D meteoro,Meteoro chuva[5], Reto boom[5]) {
     float imagem_origemy = chuva[i].atualy * boom[i].yy * 2.5;
     boom[i].x = chuva[i].x;
     boom[i].y = chuva[i].limite;
-
+    Drawl(Sombra[i]);
     DrawTexturePro(meteoro, (Rectangle){imagem_origemx, imagem_origemy, boom[i].xx * 2.5 , boom[i].yy * 2.5}, (Rectangle){chuva[i].x, chuva[i].y, boom[i].xx , boom[i].yy }, {0,0}, 0, WHITE);
-
+    
 }
 }
 }
@@ -444,7 +463,7 @@ int main() {
             ClearBackground(BLACK);
             DrawlReto(botao);
             DrawlReto(botao2);
-            DrawText(TextFormat("pong de mesa"),((int)largura) /4, 0, 100, WHITE);
+            DrawText(TextFormat("pong de mesa"),largura /3, 0, 100, WHITE);
             DrawText(TextFormat("modo ia"),((int)largura) /2 - 85, botao.y + 10, 45, WHITE);
             DrawText(TextFormat("modo 2 jogadores"),botao2.x + 25, botao2.y + 15, 40, WHITE);
         }
@@ -457,7 +476,7 @@ int main() {
         DrawlReto(reto3);
         DrawlReto(reto4);
         if(numero_de_eventos == nu_meteoro){
-                meteoros(meteoro,chuva, boom);
+                meteoros(meteoro,chuva, boom, Sombra);
             }
 
         DrawText(TextFormat("%d",ponto_1),largura /3, 0, 80, WHITE);
@@ -474,7 +493,7 @@ int main() {
         DrawlReto(reto3);
         DrawlReto(reto4);
           if(numero_de_eventos == nu_meteoro){
-                meteoros(meteoro,chuva, boom);
+                meteoros(meteoro,chuva, boom, Sombra);
               }
         DrawText(TextFormat("%d",ponto_1),largura /3, 0, 80, WHITE);
         DrawText(TextFormat("%d",ponto_2),largura /1.5, 0, 80, WHITE);
